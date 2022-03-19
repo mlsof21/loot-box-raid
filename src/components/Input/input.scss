@@ -11,3 +11,23 @@
 .spanLabel {
   font-weight: 700;
 }
+
+.rowContainer {
+  display: flex;
+  flex-direction: row;
+}
+
+.nameContainer {
+  width: 20%;
+  text-align: left;
+}
+
+.teamModContainer {
+  width: 10%;
+  text-align: left;
+}
+
+.descriptionContainer {
+  width: 70%;
+  text-align: left;
+}

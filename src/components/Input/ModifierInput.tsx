@@ -42,8 +42,8 @@ const ModifierInput = ({
   const isLastIndex = index + 1 === numModifiers;
 
   return (
-    <div className="modifierInput">
-      {editing || isLastIndex ? (
+    <div>
+      {editing ? (
         <div className="editingModifierInput">
           <label>
             Name:
@@ -63,15 +63,21 @@ const ModifierInput = ({
           <label>
             Team mod:
             <input type="checkbox" name="isTeamMod" checked={modifier.isTeamMod} onChange={handleInputChange} />
-          </label>{' '}
+          </label>
         </div>
       ) : (
-        <div>
-          <span className="spanLabel">Name:</span> <span> {modifier.name} </span>{' '}
-          <span className="spanLabel">Description:</span>
-          <span>{modifier.description}</span>
-          <span className="spanLabel">Team mod:</span>
-          <input type="checkbox" checked={modifier.isTeamMod} disabled={true} />
+        <div className="rowContainer">
+          <div className="nameContainer">
+            <span className="spanLabel">Name: {modifier.name} </span>
+          </div>
+          <div className="descriptionContainer">
+            <span className="spanLabel">Description: {modifier.description}</span>
+          </div>
+          <div className="teamModContainer">
+            <span className="spanLabel">
+              Team mod: <input type="checkbox" checked={modifier.isTeamMod} disabled={true} />
+            </span>
+          </div>
         </div>
       )}
       {isLastIndex && <button onClick={addModifier}>+</button>}

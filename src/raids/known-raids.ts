@@ -57,4 +57,15 @@ export const knownRaids: KnownRaid[] = [
       { name: 'Atheon', imagePath: null, order: 7 },
     ],
   },
+  {
+    name: 'Vow of the Disciple',
+    imagePath: null,
+    encounters: [
+      { name: 'Opening', imagePath: null, order: 1 },
+      { name: 'Acquisition', imagePath: null, order: 2 },
+      { name: 'Caretaker', imagePath: null, order: 3 },
+      { name: 'Exhibition', imagePath: null, order: 4 },
+      { name: 'Rhulk', imagePath: null, order: 5 },
+    ],
+  },
 ];
