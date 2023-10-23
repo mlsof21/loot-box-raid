@@ -3,7 +3,7 @@ import ModifierInput from '../components/Input/ModifierInput';
 import RaiderInput from '../components/Input/RaiderInput';
 import RaidSelect from '../components/Input/RaidSelect';
 import { get, set } from '../localStorage/localStorage';
-import { knownRaids } from '../raids/known-raids';
+import { Raid, raids } from '../raids/raids';
 import { defaultModifiers } from '../raids/modifiers';
 import { Modifier } from '../randomizer/randomizer';
 import './raidSetup.scss';
@@ -13,12 +13,12 @@ const RaidSetup = () => {
   const storageRaiders = get('raiders');
   const storageModifiers = get('modifiers');
 
-  const initialRaid = storageRaid ? JSON.parse(storageRaid) : knownRaids[0].name;
+  const initialRaid = storageRaid ? JSON.parse(storageRaid) : raids[0];
   const initialRaiders = storageRaiders ? JSON.parse(storageRaiders) : ['', '', '', '', '', ''];
   const initialModifiers = storageModifiers ? JSON.parse(storageModifiers) : [...defaultModifiers];
 
   if (!storageRaid) {
-    set('raid', knownRaids[0].name);
+    set('raid', raids[0]);
   }
 
   if (!storageRaiders) {
@@ -28,7 +28,7 @@ const RaidSetup = () => {
   if (!storageModifiers) {
     set('modifiers', [...defaultModifiers]);
   }
-  const [selectedRaid, setSelectedRaid] = useState(initialRaid);
+  const [selectedRaid, setSelectedRaid] = useState<Raid>(initialRaid);
 
   const [raiders, setRaiders] = useState<string[]>([...initialRaiders]);
   const [modifiers, setModifiers] = useState([...initialModifiers]);
@@ -62,15 +62,16 @@ const RaidSetup = () => {
   };
 
   const updateRaid = (raid: string) => {
-    setSelectedRaid(raid);
-    set('raid', raid);
+    const newRaid = raids.find((r) => r.name === raid);
+    setSelectedRaid(newRaid!);
+    set('raid', newRaid!);
   };
 
   return (
     <div className="fullRaidSetup">
       <div className="raidSetup">
         <h2>Raid</h2>
-        <RaidSelect value={selectedRaid} updateRaid={updateRaid} />
+        <RaidSelect value={selectedRaid.name} updateRaid={updateRaid} />
       </div>
       <div className="raiderSetup">
         <h2>Raiders</h2>

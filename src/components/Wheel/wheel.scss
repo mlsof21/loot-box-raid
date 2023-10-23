@@ -1,17 +1,18 @@
 :root {
   --wheel-font: 'Lato', 'Quicksand', sans-serif;
-  --wheel-size: 1000px;
-  --wheel-slice-spacing: 50px;
+  --wheel-size: 650px;
+  --wheel-slice-spacing: 15px;
   --wheel-border-size: 5px;
   --wheel-color: #000000;
   --neutral-color: white;
   --PI: 3.14159265358979;
   --nb-item: 0;
   --item-nb: 0;
+  --spin-degrees: 0;
   --selected-item: 0;
-  --nb-turn: 5;
+  --nb-turn: 3;
   --spinning-duration: 4.4s;
-  --reset-duration: 0.25s;
+  --reset-duration: 3.25s;
 }
 
 /* Conteneur de la roue = cercle rose extérieur */
@@ -66,14 +67,13 @@
   border-radius: 50%;
   border: solid var(--wheel-color) var(--wheel-border-size);
   background-color: var(--wheel-color);
-  transition: transform var(--reset-duration);
-  transform: rotate(0deg);
+  transform: rotate(calc((-360deg * var(--selected-item) / var(--nb-item))));
   cursor: pointer;
 }
 
 .wheel.spinning {
   transition: transform var(--spinning-duration);
-  transform: rotate(calc(var(--nb-turn) * 360deg + (-360deg * var(--selected-item) / var(--nb-item, 1))));
+  transform: rotate(calc(var(--nb-turn) * 360deg + (-360deg * var(--selected-item) / var(--nb-item))));
 }
 
 /* Centre de la roue = rond blanc au centre */
@@ -126,12 +126,12 @@
   padding-left: 0px;
   opacity: 0.25;
 
-  /* 
+  /*
     Largeur du triangle
-    Je ne sais pas pourquoi j'ai besoin d'ajouter 
+    Je ne sais pas pourquoi j'ai besoin d'ajouter
       " + var(--wheel-size) / 2 " dans slice-max-width  ==> donne 2.PI.R + R
-    mais globalement ca marche a peu près bien 
-    TODO: A étudier 
+    mais globalement ca marche a peu près bien
+    TODO: A étudier
   */
   --slice-max-width: calc(var(--PI) * var(--wheel-size) + var(--wheel-size) / 2);
   --slice-width: calc((var(--slice-max-width) / var(--nb-item)) - var(--wheel-slice-spacing));
