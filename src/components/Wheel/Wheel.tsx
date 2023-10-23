@@ -8,31 +8,17 @@ interface WheelProps {
   selectedItem: null | number;
   wheelColor: string;
   wheelNeutralColor: string;
-  spinDegrees: number;
   isSpinning: boolean;
 }
 
-const Wheel = ({
-  items,
-  handleWheelClick,
-  selectedItem,
-  wheelColor,
-  wheelNeutralColor,
-  spinDegrees,
-  isSpinning,
-}: WheelProps) => {
-  const calculatedSpinDegrees = selectedItem !== null ? 5 * 360 + (-360 * selectedItem) / items.length : 0;
-
-  console.log({ calculatedSpinDegrees, spinDegrees });
+const Wheel = ({ items, handleWheelClick, selectedItem, wheelColor, wheelNeutralColor, isSpinning }: WheelProps) => {
   const wheelVars = {
     '--nb-item': items.length,
     '--selected-item': selectedItem,
     '--wheel-color': wheelColor,
     '--wheel-neutral-color': wheelNeutralColor,
-    '--spin-degrees': `${spinDegrees}deg`,
   } as React.CSSProperties;
 
-  console.log({ selectedItem, spinDegrees });
   return (
     <div className="wheel-container">
       <div className={`wheel ${isSpinning ? 'spinning' : ''}`} style={wheelVars} onClick={handleWheelClick}>

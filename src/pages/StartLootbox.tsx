@@ -8,10 +8,6 @@ import volumeOn from '../assets/images/volumeOn.png';
 import volumeOff from '../assets/images/volumeOff.png';
 
 import './raidSetup.scss';
-import { Wheel } from 'react-custom-roulette';
-import { Modifier } from '../randomizer/randomizer';
-import SpinningWheel from '../components/Wheel/SpinningWheel';
-import { getPackedSettings } from 'http2';
 
 const StartLootbox = () => {
   const storageRaid = get('raid');
@@ -44,7 +40,6 @@ const StartLootbox = () => {
   const [modifierCount, _] = useState(modifiers.length);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [mustSpin, setMustSpin] = useState(false);
-  const [spinDegrees, setSpinDegrees] = useState(0);
 
   useEffect(() => {
     console.log('in useEffect', { selectedItem: modifiers.length });
@@ -53,12 +48,6 @@ const StartLootbox = () => {
       setChosenModifiers(newChosenModifiers);
     }
   }, [selectedItem]);
-
-  const getSpinDegrees = () => {
-    const degrees = 360 / modifiers.length;
-    const spinDegrees = degrees * (selectedItem || 0) + 360 * 5;
-    return spinDegrees;
-  };
 
   useEffect(() => {
     if (mustSpin) {
@@ -118,7 +107,6 @@ const StartLootbox = () => {
           wheelNeutralColor={selectedRaid.wheelNeutralColor}
           handleWheelClick={selectItem}
           selectedItem={selectedItem}
-          spinDegrees={spinDegrees}
           isSpinning={mustSpin}
         />
       </div>

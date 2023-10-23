@@ -1,5 +1,5 @@
 :root {
-  --wheel-font: 'Lato', 'Quicksand', sans-serif;
+  $wheelFont: 'Lato', 'Quicksand', sans-serif;
   --wheel-size: 650px;
   --wheel-slice-spacing: 15px;
   --wheel-border-size: 5px;
@@ -8,7 +8,6 @@
   --PI: 3.14159265358979;
   --nb-item: 0;
   --item-nb: 0;
-  --spin-degrees: 0;
   --selected-item: 0;
   --nb-turn: 3;
   --spinning-duration: 4.4s;
@@ -108,7 +107,7 @@
   color: var(--neutral-color);
   text-align: right;
   padding: 0 25px 0 50px;
-  font-family: var(--wheel-font);
+  font-family: $wheelFont;
 }
 
 /* Background de l'élément = triangle rose plus clair */
