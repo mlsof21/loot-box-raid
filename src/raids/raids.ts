@@ -1,17 +1,4 @@
-export interface Raid {
-  name: string;
-  imagePath: string | null;
-  wheelColor: string;
-  wheelNeutralColor: string;
-  encounters: RaidEncounter[];
-}
-
-export interface RaidEncounter {
-  name: string;
-  imagePath: string | null;
-
-  order: number;
-}
+import { Raid } from '../types/Raid';
 
 export const raids: Raid[] = [
   {

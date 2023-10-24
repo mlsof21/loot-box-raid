@@ -1,3 +1,5 @@
+import { Modifier } from '../types/Raid';
+
 export interface RandomizedUser {
   assignedModifiers: Modifier[];
   modifiersByName: string[];
@@ -22,12 +24,6 @@ export interface RandomizedRaid {
   availableModifiers: Modifier[];
   byUser: Record<string, Modifier[]>;
   byEncounter: Record<string, Modifier[]>;
-}
-
-export interface Modifier {
-  name: string;
-  description: string;
-  isTeamMod: boolean;
 }
 
 export function randomizeForUser(modifiers: Modifier[], user: RandomizedUser): Modifier {

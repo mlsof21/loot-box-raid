@@ -3,10 +3,10 @@ import ModifierInput from '../components/Input/ModifierInput';
 import RaiderInput from '../components/Input/RaiderInput';
 import RaidSelect from '../components/Input/RaidSelect';
 import { get, set } from '../localStorage/localStorage';
-import { Raid, raids } from '../raids/raids';
+import { raids } from '../raids/raids';
 import { defaultModifiers } from '../raids/modifiers';
-import { Modifier } from '../randomizer/randomizer';
 import './raidSetup.scss';
+import { Modifier, Raid } from '../types/Raid';
 
 const RaidSetup = () => {
   const storageRaid = get('raid');

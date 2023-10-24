@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Modifier } from '../../randomizer/randomizer';
 import './input.scss';
+import { Modifier } from '../../types/Raid';
 
 interface ModifierInputProps {
   existingModifier: Modifier | null;

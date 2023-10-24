@@ -1,45 +1,28 @@
 import { useEffect, useState } from 'react';
-import CustomWheel from '../components/Wheel/Wheel';
-import { get, set } from '../localStorage/localStorage';
-import { raids } from '../raids/raids';
-import { defaultModifiers } from '../raids/modifiers';
 import music from '../assets/music/spinmusic.mp3';
-import volumeOn from '../assets/images/volumeOn.png';
-import volumeOff from '../assets/images/volumeOff.png';
-
+import CustomWheel from '../components/Wheel/Wheel';
+import { get, getOrDefault } from '../localStorage/localStorage';
+import { defaultModifiers } from '../raids/modifiers';
+import { raids } from '../raids/raids';
+import { Modifier, Raid, Raider } from '../types/Raid';
 import './raidSetup.scss';
+import EncounterGrid from '../components/EncounterGrid/EncounterGrid';
+import { RandomizedUser } from '../randomizer/randomizer';
 
 const StartLootbox = () => {
-  const storageRaid = get('raid');
-  const storageRaiders = get('raiders');
-  const storageModifiers = get('modifiers');
-
-  const initialRaid = storageRaid ? JSON.parse(storageRaid) : raids[0];
-  const initialRaiders = storageRaiders ? JSON.parse(storageRaiders) : ['', '', '', '', '', ''];
-  const initialModifiers = storageModifiers ? JSON.parse(storageModifiers) : [...defaultModifiers];
-  const audio = new Audio(music);
-  audio.volume = 0.1;
-
-  if (!storageRaid) {
-    set('raid', raids[0]);
-  }
-
-  if (!storageRaiders) {
-    set('raiders', [...initialRaiders]);
-  }
-
-  if (!storageModifiers) {
-    set('modifiers', [...defaultModifiers]);
-  }
-  const [selectedRaid, setSelectedRaid] = useState(initialRaid);
-  const [raiders, setRaiders] = useState<string[]>([...initialRaiders]);
-  const [modifiers, setModifiers] = useState([...initialModifiers]);
+  const [selectedRaid, setSelectedRaid] = useState<Raid>(getOrDefault<Raid>('raid', raids[0]));
+  const [raiders, setRaiders] = useState<string[]>(getOrDefault<string[]>('raiders', Array(6).fill('')));
+  const [modifiers, setModifiers] = useState<Modifier[]>(getOrDefault<Modifier[]>('modifiers', [...defaultModifiers]));
   const [chosenModifiers, setChosenModifiers] = useState<number[]>([]);
   const [audioMuted, setAudioMuted] = useState(false);
   const [selectedItem, setSelectedItem] = useState<null | number>(null);
   const [modifierCount, _] = useState(modifiers.length);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [mustSpin, setMustSpin] = useState(false);
+  console.log('in StartLootbox', { raiders });
+
+  const audio = new Audio(music);
+  audio.volume = 0.1;
 
   useEffect(() => {
     console.log('in useEffect', { selectedItem: modifiers.length });
@@ -69,7 +52,6 @@ const StartLootbox = () => {
     }
     playAudio();
     setSelectedItem(newSelectedItem);
-    setSpinDegrees(getSpinDegrees());
   };
 
   const playAudio = async () => {
@@ -91,16 +73,17 @@ const StartLootbox = () => {
 
   return (
     <>
-      {/* <div className="soundButton" onClick={handleVolumeClick}>
-        {audioMuted ? <img alt="volume on" src={volumeOn} /> : <img alt="volumne off" src={volumeOff} />}
-      </div> */}
       <div style={{ display: 'flex', flexDirection: 'row' }}>
-        <div className="chosenModifiers">
+        {/* <div className="chosenModifiers">
           <div>Chosen Modifiers:</div>
           {chosenModifiers.map((x) => (
             <div key={modifiers[x].name}>{modifiers[x].name}</div>
-          ))}
-        </div>
+            ))}
+          </div> */}
+        <EncounterGrid
+          encounters={selectedRaid.encounters}
+          raiders={raiders.map((r) => ({ name: r, assignedModifiers: [], modifiersByName: [], byEncounter: {} }))}
+        />
         <CustomWheel
           items={modifiers.map((x) => x.name)}
           wheelColor={selectedRaid.wheelColor}

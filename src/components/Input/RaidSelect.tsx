@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Raid, raids } from '../../raids/raids';
+import { raids } from '../../raids/raids';
+import { Raid } from '../../types/Raid';
 
 interface RaidSelectProps {
   value: string;

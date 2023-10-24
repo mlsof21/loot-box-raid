@@ -1,4 +1,4 @@
-import { Modifier } from '../randomizer/randomizer';
+import { Modifier } from '../types/Raid';
 
 export const defaultModifiers: Modifier[] = [
   { name: 'DIM loadout', description: 'Use a randomized loadout from DIM', isTeamMod: false },
@@ -45,7 +45,7 @@ export const defaultModifiers: Modifier[] = [
   { name: 'Ok Boomer', description: 'You must max your aim sensitivity.', isTeamMod: false },
   { name: 'Team Mod: Native Tongue', description: '', isTeamMod: true },
   { name: 'Team Mod: No repeat Exotics', description: '', isTeamMod: true },
-  { name: 'Pepe le Pew', description: 'You are only allowed to speak French.', isTeamMod: false },
+  { name: 'Pepé Le Pew', description: 'You are only allowed to speak French.', isTeamMod: false },
   { name: 'Exotic Party Choice', description: '', isTeamMod: false },
   { name: 'Texas Drawl', description: '', isTeamMod: false },
   { name: 'Team Rat King', description: '', isTeamMod: true },

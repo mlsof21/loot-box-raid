@@ -1,5 +1,5 @@
 :root {
-  $wheelFont: 'Lato', 'Quicksand', sans-serif;
+  --wheel-font: 'Lato', 'Quicksand', sans-serif;
   --wheel-size: 650px;
   --wheel-slice-spacing: 15px;
   --wheel-border-size: 5px;
@@ -107,7 +107,7 @@
   color: var(--neutral-color);
   text-align: right;
   padding: 0 25px 0 50px;
-  font-family: $wheelFont;
+  font-family: var(--wheel-font);
 }
 
 /* Background de l'élément = triangle rose plus clair */

@@ -1,11 +1,10 @@
-import { stringify } from 'querystring';
+import { Modifier } from '../types/Raid';
 import {
   RandomizedEncounter,
   randomizeEncounter,
   randomizeForUser,
   randomizeRaid,
   RandomizedUser,
-  Modifier,
   RandomizedRaid,
 } from './randomizer';
 
@@ -164,7 +163,7 @@ describe('randomizer tests', () => {
       expect(isArrayUnique(userModifiers[user])).toBeTruthy();
     }
     for (const encounter in encounterModifiers) {
-      expect(isArrayUnique(encounterModifiers[encounter]));
+      expect(isArrayUnique(encounterModifiers[encounter])).toBeTruthy();
     }
   });
 });
