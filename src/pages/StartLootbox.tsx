@@ -8,6 +8,19 @@ import { Modifier, Raid, RaidEncounter, Raider } from '../types/Raid';
 import './raidSetup.scss';
 import EncounterGrid from '../components/EncounterGrid/EncounterGrid';
 import { RandomizedUser } from '../randomizer/randomizer';
+import { Box, Button, Modal, Typography } from '@mui/material';
+
+const style = {
+  position: 'absolute' as 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 400,
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  p: 4,
+};
 
 const StartLootbox = () => {
   const selectedRaid = getOrDefault<Raid>('raid', raids[0]);
@@ -25,6 +38,7 @@ const StartLootbox = () => {
   const [audioMuted, setAudioMuted] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [mustSpin, setMustSpin] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   console.log('in StartLootbox', { raiders });
 
   const audio = new Audio(music);
@@ -32,7 +46,7 @@ const StartLootbox = () => {
 
   useEffect(() => {
     const newAssignedModifiers = {} as Record<number, Record<number, string>>;
-    encounters.forEach((encounter, encounterIndex) => {
+    encounters.forEach((_, encounterIndex) => {
       newAssignedModifiers[encounterIndex] = {};
       raiders.forEach((raider, raiderIndex) => {
         newAssignedModifiers[encounterIndex][raiderIndex] = '';
@@ -40,18 +54,15 @@ const StartLootbox = () => {
     });
     setAssignedModifiers({ ...newAssignedModifiers });
   }, []);
-  useEffect(() => {
-    console.log('in useEffect', { selectedItem: modifiers.length });
-    if (selectedItem) {
-      assignNewModifier();
-      console.log(JSON.stringify(assignedModifiers, null, 2));
-      console.log(currentEncounter, currentRaider);
-      if (currentRaider === raiders.length - 1) {
-        nextEncounter();
-      }
-      nextRaider();
+
+  const acceptAssignment = () => {
+    assignNewModifier();
+    if (currentRaider === raiders.length - 1) {
+      nextEncounter();
     }
-  }, [selectedItem]);
+    nextRaider();
+    setModalOpen(false);
+  };
 
   const assignNewModifier = () => {
     const chosenModifier = modifiers[selectedItem!];
@@ -72,17 +83,14 @@ const StartLootbox = () => {
     if (mustSpin) {
       setTimeout(() => {
         setMustSpin(false);
+        setModalOpen(true);
       }, 4400);
     }
   }, [mustSpin]);
 
   const selectItem = () => {
-    console.log('in selectItem', selectedItem);
-
-    console.log('in if');
+    const newSelectedItem = Math.floor(Math.random() * modifierCount);
     setMustSpin(true);
-    let newSelectedItem = Math.floor(Math.random() * modifierCount);
-
     playAudio();
     setSelectedItem(newSelectedItem);
   };
@@ -128,6 +136,27 @@ const StartLootbox = () => {
           isSpinning={mustSpin}
         />
       </div>
+      {/* <Button onClick={handleOpen}>Open modal</Button> */}
+      {selectedItem && (
+        <Modal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box sx={style}>
+            <Typography id="modal-modal-title" variant="h6" component="h2">
+              {raiders[currentRaider]} has been assigned {modifiers[selectedItem!].name} for{' '}
+              {encounters[currentEncounter].name}
+            </Typography>
+            <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+              Would you like to accept this assignment?
+            </Typography>
+            <Button onClick={acceptAssignment}>Yes</Button>
+            <Button onClick={() => setModalOpen(false)}>No</Button>
+          </Box>
+        </Modal>
+      )}
     </>
   );
 };
