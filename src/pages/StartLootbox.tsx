@@ -4,19 +4,25 @@ import CustomWheel from '../components/Wheel/Wheel';
 import { get, getOrDefault } from '../localStorage/localStorage';
 import { defaultModifiers } from '../raids/modifiers';
 import { raids } from '../raids/raids';
-import { Modifier, Raid, Raider } from '../types/Raid';
+import { Modifier, Raid, RaidEncounter, Raider } from '../types/Raid';
 import './raidSetup.scss';
 import EncounterGrid from '../components/EncounterGrid/EncounterGrid';
 import { RandomizedUser } from '../randomizer/randomizer';
 
 const StartLootbox = () => {
-  const [selectedRaid, setSelectedRaid] = useState<Raid>(getOrDefault<Raid>('raid', raids[0]));
-  const [raiders, setRaiders] = useState<string[]>(getOrDefault<string[]>('raiders', Array(6).fill('')));
-  const [modifiers, setModifiers] = useState<Modifier[]>(getOrDefault<Modifier[]>('modifiers', [...defaultModifiers]));
-  const [chosenModifiers, setChosenModifiers] = useState<number[]>([]);
-  const [audioMuted, setAudioMuted] = useState(false);
+  const selectedRaid = getOrDefault<Raid>('raid', raids[0]);
+  const encounters: RaidEncounter[] = selectedRaid.encounters;
+  const raiders = getOrDefault<string[]>('raiders', Array(6).fill(''));
+  const modifiers = getOrDefault<Modifier[]>('modifiers', [...defaultModifiers]);
+  const modifierCount = modifiers.length;
+
+  const [currentRaider, setCurrentRaider] = useState(0);
+  const [currentEncounter, setCurrentEncounter] = useState(0);
+  // const [chosenModifiers, setChosenModifiers] = useState<number[]>([]);
   const [selectedItem, setSelectedItem] = useState<null | number>(null);
-  const [modifierCount, _] = useState(modifiers.length);
+  const [assignedModifiers, setAssignedModifiers] = useState<Record<number, Record<number, string>>>({}); // encounterIndex -> raiderIndex -> modifierName
+
+  const [audioMuted, setAudioMuted] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [mustSpin, setMustSpin] = useState(false);
   console.log('in StartLootbox', { raiders });
@@ -25,12 +31,42 @@ const StartLootbox = () => {
   audio.volume = 0.1;
 
   useEffect(() => {
+    const newAssignedModifiers = {} as Record<number, Record<number, string>>;
+    encounters.forEach((encounter, encounterIndex) => {
+      newAssignedModifiers[encounterIndex] = {};
+      raiders.forEach((raider, raiderIndex) => {
+        newAssignedModifiers[encounterIndex][raiderIndex] = '';
+      });
+    });
+    setAssignedModifiers({ ...newAssignedModifiers });
+  }, []);
+  useEffect(() => {
     console.log('in useEffect', { selectedItem: modifiers.length });
     if (selectedItem) {
-      const newChosenModifiers = [...chosenModifiers, selectedItem];
-      setChosenModifiers(newChosenModifiers);
+      assignNewModifier();
+      console.log(JSON.stringify(assignedModifiers, null, 2));
+      console.log(currentEncounter, currentRaider);
+      if (currentRaider === raiders.length - 1) {
+        nextEncounter();
+      }
+      nextRaider();
     }
   }, [selectedItem]);
+
+  const assignNewModifier = () => {
+    const chosenModifier = modifiers[selectedItem!];
+    const newAssignedModifiers = { ...assignedModifiers };
+    newAssignedModifiers[currentEncounter][currentRaider] = chosenModifier.name;
+    setAssignedModifiers(newAssignedModifiers);
+  };
+  const nextRaider = () => {
+    const newRaider = (currentRaider + 1) % raiders.length;
+    setCurrentRaider(newRaider);
+  };
+  const nextEncounter = () => {
+    const newEncounter = (currentEncounter + 1) % encounters.length;
+    setCurrentEncounter(newEncounter);
+  };
 
   useEffect(() => {
     if (mustSpin) {
@@ -46,10 +82,7 @@ const StartLootbox = () => {
     console.log('in if');
     setMustSpin(true);
     let newSelectedItem = Math.floor(Math.random() * modifierCount);
-    while (chosenModifiers.includes(newSelectedItem)) {
-      console.log('in while', { newSelectedItem, chosenModifiers });
-      newSelectedItem = Math.floor(Math.random() * modifierCount);
-    }
+
     playAudio();
     setSelectedItem(newSelectedItem);
   };
@@ -73,6 +106,7 @@ const StartLootbox = () => {
 
   return (
     <>
+      <h2>{selectedRaid.name} Loot Box Raid</h2>
       <div style={{ display: 'flex', flexDirection: 'row' }}>
         {/* <div className="chosenModifiers">
           <div>Chosen Modifiers:</div>
@@ -83,6 +117,7 @@ const StartLootbox = () => {
         <EncounterGrid
           encounters={selectedRaid.encounters}
           raiders={raiders.map((r) => ({ name: r, assignedModifiers: [], modifiersByName: [], byEncounter: {} }))}
+          assignedModifiers={assignedModifiers}
         />
         <CustomWheel
           items={modifiers.map((x) => x.name)}
