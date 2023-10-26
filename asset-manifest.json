@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/loot-box-raid/static/css/main.bfec0eb3.css",
+    "main.js": "/loot-box-raid/static/js/main.d48e85a9.js",
+    "static/js/787.64d4de16.chunk.js": "/loot-box-raid/static/js/787.64d4de16.chunk.js",
+    "static/media/spinmusic.mp3": "/loot-box-raid/static/media/spinmusic.80a32dfef7cb0a7b5a81.mp3",
+    "index.html": "/loot-box-raid/index.html",
+    "main.bfec0eb3.css.map": "/loot-box-raid/static/css/main.bfec0eb3.css.map",
+    "main.d48e85a9.js.map": "/loot-box-raid/static/js/main.d48e85a9.js.map",
+    "787.64d4de16.chunk.js.map": "/loot-box-raid/static/js/787.64d4de16.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.bfec0eb3.css",
+    "static/js/main.d48e85a9.js"
+  ]
+}
