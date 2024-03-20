@@ -1,32 +1,30 @@
 import React, { useState } from 'react';
 import './input.scss';
 import { Modifier } from '../../types/Raid';
+import { Box, Checkbox, Container, FormControl, FormControlLabel, InputLabel, OutlinedInput } from '@mui/material';
 
-interface ModifierInputProps {
-  existingModifier: Modifier | null;
+interface Props {
+  existingModifier: Modifier;
   updateModifier: (index: number, modifier: Modifier) => void;
-  addModifier: () => void;
   index: number;
-  numModifiers: number;
-  editing: boolean;
 }
+const ModifierInput = ({ existingModifier, updateModifier, index }: Props) => {
+  const [modifier, setModifier] = useState<Modifier>(existingModifier);
 
-const ModifierInput = ({
-  existingModifier,
-  updateModifier,
-  addModifier,
-  index,
-  numModifiers,
-  editing,
-}: ModifierInputProps) => {
-  const [modifier, setModifier] = useState<Modifier>(
-    existingModifier ? { ...existingModifier } : { name: '', description: '', isTeamMod: false },
-  );
-
+  console.log({ index, modifier, existingModifier });
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log({ e });
     const value = e.currentTarget.type === 'checkbox' ? e.currentTarget.checked : e.currentTarget.value;
     const name = e.currentTarget.name;
     const changedMod = { ...modifier, [name]: value };
+    setModifier({ ...changedMod });
+    updateModifier(index, changedMod);
+  };
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log({ e });
+    const value = e.currentTarget.checked;
+    const changedMod = { ...modifier, isTeamMod: value };
     setModifier({ ...changedMod });
     updateModifier(index, changedMod);
   };
@@ -39,49 +37,53 @@ const ModifierInput = ({
     updateModifier(index, changedMod);
   };
 
-  const isLastIndex = index + 1 === numModifiers;
+  const boxStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  };
 
   return (
-    <div>
-      {editing ? (
-        <div className="editingModifierInput">
-          <label>
-            Name:
-            <input type="text" name="name" value={modifier.name} onChange={handleInputChange} />
-          </label>
-          <label>
-            Description:
-            <textarea
+    <>
+      <Container sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', gap: '10px' }}>
+        <Box sx={boxStyle}>
+          <FormControl>
+            <InputLabel htmlFor="component-outlined">Name</InputLabel>
+            <OutlinedInput
+              type="text"
+              label="Name"
+              name="name"
+              value={modifier.name}
+              onChange={handleInputChange}
+              color="primary"
+              id="component-outlined"
+            />
+          </FormControl>
+        </Box>
+        <Box sx={{ ...boxStyle, flex: 2 }}>
+          <FormControl sx={{ width: '100%' }}>
+            <InputLabel htmlFor="component-outlined">Description</InputLabel>
+            <OutlinedInput
+              multiline={true}
               name="description"
+              label="Description"
               placeholder="Enter description here"
-              rows={2}
-              cols={50}
+              minRows={3}
               value={modifier.description}
               onChange={handleTextareaChange}
+              id="component-outlined"
+              fullWidth={true}
             />
-          </label>
-          <label>
-            Team mod:
-            <input type="checkbox" name="isTeamMod" checked={modifier.isTeamMod} onChange={handleInputChange} />
-          </label>
-        </div>
-      ) : (
-        <div className="rowContainer">
-          <div className="nameContainer">
-            <span className="spanLabel">Name: {modifier.name} </span>
-          </div>
-          <div className="descriptionContainer">
-            <span className="spanLabel">Description: {modifier.description}</span>
-          </div>
-          <div className="teamModContainer">
-            <span className="spanLabel">
-              Team mod: <input type="checkbox" checked={modifier.isTeamMod} disabled={true} />
-            </span>
-          </div>
-        </div>
-      )}
-      {isLastIndex && <button onClick={addModifier}>+</button>}
-    </div>
+          </FormControl>
+        </Box>
+        <Box sx={boxStyle}>
+          <FormControlLabel
+            control={<Checkbox checked={modifier.isTeamMod} onChange={handleCheckboxChange} />}
+            label="Team Mod"
+          />
+        </Box>
+      </Container>
+    </>
   );
 };
 

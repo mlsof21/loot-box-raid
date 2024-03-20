@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import './input.scss';
+import { Input, InputLabel } from '@mui/material';
 
 interface RaiderInputProps {
   updateRaider: (raider: string, index: number) => void;
@@ -17,10 +18,10 @@ const RaiderInput = ({ updateRaider, index, value }: RaiderInputProps) => {
 
   return (
     <div className="raiderInput">
-      <label>
+      <InputLabel>
         Raider {index + 1}:
-        <input type="text" value={raider} onChange={handleInputChange} />
-      </label>
+        <Input sx={{ marginLeft: '10px' }} type="text" value={raider} onChange={handleInputChange} />
+      </InputLabel>
     </div>
   );
 };

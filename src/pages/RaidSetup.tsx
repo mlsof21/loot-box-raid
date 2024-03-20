@@ -2,38 +2,24 @@ import { useState } from 'react';
 import ModifierInput from '../components/Input/ModifierInput';
 import RaiderInput from '../components/Input/RaiderInput';
 import RaidSelect from '../components/Input/RaidSelect';
-import { get, set } from '../localStorage/localStorage';
+import { getOrDefault, set } from '../localStorage/localStorage';
 import { raids } from '../raids/raids';
 import { defaultModifiers } from '../raids/modifiers';
 import './raidSetup.scss';
 import { Modifier, Raid } from '../types/Raid';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Modal, Typography } from '@mui/material';
+import { ExpandMore } from '@mui/icons-material';
+import { modalStyle } from './StartLootbox';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const RaidSetup = () => {
-  const storageRaid = get('raid');
-  const storageRaiders = get('raiders');
-  const storageModifiers = get('modifiers');
+  const [selectedRaid, setSelectedRaid] = useState<Raid>(getOrDefault<Raid>('raid', raids[0]));
+  const [raiders, setRaiders] = useState<string[]>(getOrDefault<string[]>('raiders', Array(6).fill('')));
+  const [modifiers, setModifiers] = useState<Modifier[]>(getOrDefault<Modifier[]>('modifiers', [...defaultModifiers]));
 
-  const initialRaid = storageRaid ? JSON.parse(storageRaid) : raids[0];
-  const initialRaiders = storageRaiders ? JSON.parse(storageRaiders) : ['', '', '', '', '', ''];
-  const initialModifiers = storageModifiers ? JSON.parse(storageModifiers) : [...defaultModifiers];
+  const [expandedAccordions, setExpandedAccordions] = useState<number[]>([]);
 
-  if (!storageRaid) {
-    set('raid', raids[0]);
-  }
-
-  if (!storageRaiders) {
-    set('raiders', [...initialRaiders]);
-  }
-
-  if (!storageModifiers) {
-    set('modifiers', [...defaultModifiers]);
-  }
-  const [selectedRaid, setSelectedRaid] = useState<Raid>(initialRaid);
-
-  const [raiders, setRaiders] = useState<string[]>([...initialRaiders]);
-  const [modifiers, setModifiers] = useState([...initialModifiers]);
-
-  const [editingModifierIndex, setEditingModifierIndex] = useState(-1);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const updateRaider = (raider: string, index: number) => {
     const newRaiders = [...raiders];
@@ -46,7 +32,15 @@ const RaidSetup = () => {
     const existingModifiers = [...modifiers];
     existingModifiers.push({ name: '', description: '', isTeamMod: false });
     setModifiers(existingModifiers);
+    setModalOpen(false);
     set('modifiers', [...existingModifiers]);
+  };
+  const deleteModifier = (index: number) => {
+    setExpandedAccordions([]);
+    const newModifiers = [...modifiers];
+    newModifiers.splice(index, 1);
+    setModifiers([...newModifiers]);
+    set('modifiers', [...newModifiers]);
   };
 
   const updateModifier = (index: number, modifier: Modifier) => {
@@ -56,25 +50,30 @@ const RaidSetup = () => {
     set('modifiers', [...newModifiers]);
   };
 
-  const handleModifierClick = (index: number) => {
-    console.log('Editing index', index);
-    setEditingModifierIndex(index);
-  };
-
   const updateRaid = (raid: string) => {
     const newRaid = raids.find((r) => r.name === raid);
     setSelectedRaid(newRaid!);
     set('raid', newRaid!);
   };
 
+  const expandCollapseAccordion = (index: number) => {
+    const newExpandedAccordions = [...expandedAccordions];
+    if (newExpandedAccordions.includes(index)) {
+      newExpandedAccordions.splice(newExpandedAccordions.indexOf(index), 1);
+    } else {
+      newExpandedAccordions.push(index);
+    }
+    setExpandedAccordions([...newExpandedAccordions]);
+  };
+
   return (
     <div className="fullRaidSetup">
       <div className="raidSetup">
-        <h2>Raid</h2>
+        <Typography variant="h2">Raid Setup</Typography>
         <RaidSelect value={selectedRaid.name} updateRaid={updateRaid} />
       </div>
       <div className="raiderSetup">
-        <h2>Raiders</h2>
+        <Typography variant="h2">Raiders</Typography>
         {raiders.map((raider, index) => (
           <div key={index} className="raiderInput">
             <RaiderInput index={index} updateRaider={updateRaider} value={raider} />
@@ -83,19 +82,54 @@ const RaidSetup = () => {
       </div>
 
       <div className="modifierSetup">
-        <h2>Modifiers</h2>
-        {modifiers.map((modifier, index) => (
-          <div key={index} className="modifierInput" onClick={() => handleModifierClick(index)}>
-            <ModifierInput
-              index={index}
-              numModifiers={modifiers.length}
-              updateModifier={updateModifier}
-              existingModifier={modifier}
-              addModifier={addModifier}
-              editing={index === editingModifierIndex}
-            />
-          </div>
-        ))}
+        <Typography variant="h2">Modifiers</Typography>
+        <Button onClick={() => setModalOpen(true)}>Add Modifier</Button>
+        {modifiers
+          .filter((m) => m.name !== '')
+          .map((modifier, index) => (
+            <div key={index} className="modifierInput">
+              <Accordion onChange={() => expandCollapseAccordion(index)} expanded={expandedAccordions.includes(index)}>
+                <AccordionSummary expandIcon={<ExpandMore />}>
+                  <Typography sx={{ width: '33%' }}>{`${index} ${modifier.name}`}</Typography>
+                  <Typography
+                    sx={{
+                      width: '66%',
+                      color: 'text.secondary',
+                      display: '-webkit-box',
+                      overflow: 'hidden',
+                      WebkitBoxOrient: 'vertical',
+                      WebkitLineClamp: 1,
+                      lineClamp: 1,
+                    }}
+                  >
+                    {modifier.description}
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <ModifierInput index={index} updateModifier={updateModifier} existingModifier={modifier} />
+                  <DeleteIcon sx={{ color: 'red', cursor: 'pointer' }} onClick={() => deleteModifier(index)} />
+                </AccordionDetails>
+              </Accordion>
+            </div>
+          ))}
+        <Modal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box sx={{ ...modalStyle, width: '60%' }}>
+            {modalOpen && (
+              <ModifierInput
+                index={modifiers.length - 1}
+                updateModifier={updateModifier}
+                existingModifier={modifiers.at(-1)!}
+              />
+            )}
+            <Button onClick={addModifier}>Submit</Button>
+            <Button onClick={() => setModalOpen(false)}>Cancel</Button>
+          </Box>
+        </Modal>
       </div>
     </div>
   );

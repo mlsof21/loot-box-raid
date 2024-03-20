@@ -2,9 +2,9 @@
   display: grid;
   grid-template-columns: minmax(100px, 1fr) repeat(6, 1fr); // Header column + 7 columns
   grid-template-rows: minmax(50px, 1fr) repeat(9, 1fr); // Header row + 7 rows
-  grid-gap: 8px;
-  align-items: center;
-  justify-items: center;
+  grid-gap: 4px;
+  // align-items: center;
+  // justify-items: center;
 }
 
 .empty-cell {
@@ -18,12 +18,6 @@
   padding: 8px;
 }
 
-// .encounter-row {
-//   display: grid;
-//   grid-template-columns: auto repeat(auto-fit, minmax(100px, 1fr));
-//   grid-gap: 8px;
-// }
-
 .encounter-name {
   font-weight: bold;
   background-color: #333;
@@ -31,8 +25,23 @@
   padding: 8px;
 }
 
+.grid-cell {
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
 .modifier-cell {
-  // background-color: #f0f0f0;
+  background-color: #0a1a59;
   padding: 8px;
-  // border: 1px solid #ccc;
+  width: 100%;
+  border: 1px solid #cccccc6a;
+  flex: 1;
+  margin: auto;
+}
+
+.selected {
+  border: 1px solid #fff;
 }

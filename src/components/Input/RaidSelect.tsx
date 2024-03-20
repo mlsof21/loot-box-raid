@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { raids } from '../../raids/raids';
 import { Raid } from '../../types/Raid';
+import { InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 
 interface RaidSelectProps {
   value: string;
@@ -11,8 +12,8 @@ const RaidSelect = ({ value, updateRaid }: RaidSelectProps) => {
   const [selectedRaidName, setSelectedRaidName] = useState(value);
   const raid = raids.filter((raid) => raid.name === selectedRaidName)[0];
   const [selectedRaid, setSelectedRaid] = useState<Raid>(raid);
-  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newRaid = raids.filter((raid) => raid.name === e.currentTarget.value)[0];
+  const handleSelectChange = (e: SelectChangeEvent) => {
+    const newRaid = raids.filter((raid) => raid.name === e.target.value)[0];
     setSelectedRaidName(newRaid.name);
     setSelectedRaid(newRaid);
     updateRaid(newRaid.name);
@@ -20,16 +21,15 @@ const RaidSelect = ({ value, updateRaid }: RaidSelectProps) => {
 
   return (
     <div>
-      <label>
-        Raid:
-        <select name="raid" id="raid" value={selectedRaidName} onChange={handleSelectChange}>
-          {raids.map((raid, index) => (
-            <option key={index} value={raid.name}>
-              {raid.name}
-            </option>
-          ))}
-        </select>
-      </label>
+      <InputLabel>Raid:</InputLabel>
+
+      <Select name="raid" id="raid" value={selectedRaidName} onChange={handleSelectChange}>
+        {raids.map((raid, index) => (
+          <MenuItem key={index} value={raid.name}>
+            {raid.name}
+          </MenuItem>
+        ))}
+      </Select>
       <p>Encounters: {selectedRaid.encounters.map((enc) => enc.name).join(', ')}</p>
     </div>
   );

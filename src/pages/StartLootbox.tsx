@@ -1,16 +1,15 @@
 import { useEffect, useState } from 'react';
 import music from '../assets/music/spinmusic.mp3';
 import CustomWheel from '../components/Wheel/Wheel';
-import { get, getOrDefault } from '../localStorage/localStorage';
+import { getOrDefault } from '../localStorage/localStorage';
 import { defaultModifiers } from '../raids/modifiers';
 import { raids } from '../raids/raids';
-import { Modifier, Raid, RaidEncounter, Raider } from '../types/Raid';
+import { Modifier, Raid, RaidEncounter } from '../types/Raid';
 import './raidSetup.scss';
 import EncounterGrid from '../components/EncounterGrid/EncounterGrid';
-import { RandomizedUser } from '../randomizer/randomizer';
 import { Box, Button, Modal, Typography } from '@mui/material';
 
-const style = {
+export const modalStyle = {
   position: 'absolute' as 'absolute',
   top: '50%',
   left: '50%',
@@ -27,32 +26,30 @@ const StartLootbox = () => {
   const encounters: RaidEncounter[] = selectedRaid.encounters;
   const raiders = getOrDefault<string[]>('raiders', Array(6).fill(''));
   const modifiers = getOrDefault<Modifier[]>('modifiers', [...defaultModifiers]);
-  const modifierCount = modifiers.length;
 
   const [currentRaider, setCurrentRaider] = useState(0);
   const [currentEncounter, setCurrentEncounter] = useState(0);
-  // const [chosenModifiers, setChosenModifiers] = useState<number[]>([]);
-  const [selectedItem, setSelectedItem] = useState<null | number>(null);
-  const [assignedModifiers, setAssignedModifiers] = useState<Record<number, Record<number, string>>>({}); // encounterIndex -> raiderIndex -> modifierName
+  const [selectedItem, setSelectedItem] = useState<number | null>(null);
+  const [assignedModifiers, setAssignedModifiers] = useState<Record<number, Record<number, Modifier | undefined>>>({}); // encounterIndex -> raiderIndex -> modifierName
 
   const [audioMuted, setAudioMuted] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [mustSpin, setMustSpin] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  console.log('in StartLootbox', { raiders });
 
   const audio = new Audio(music);
   audio.volume = 0.1;
 
   useEffect(() => {
-    const newAssignedModifiers = {} as Record<number, Record<number, string>>;
+    const newAssignedModifiers = {} as Record<number, Record<number, Modifier | undefined>>;
     encounters.forEach((_, encounterIndex) => {
       newAssignedModifiers[encounterIndex] = {};
-      raiders.forEach((raider, raiderIndex) => {
-        newAssignedModifiers[encounterIndex][raiderIndex] = '';
+      raiders.forEach((_, raiderIndex) => {
+        newAssignedModifiers[encounterIndex][raiderIndex] = undefined;
       });
     });
     setAssignedModifiers({ ...newAssignedModifiers });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const acceptAssignment = () => {
@@ -67,7 +64,7 @@ const StartLootbox = () => {
   const assignNewModifier = () => {
     const chosenModifier = modifiers[selectedItem!];
     const newAssignedModifiers = { ...assignedModifiers };
-    newAssignedModifiers[currentEncounter][currentRaider] = chosenModifier.name;
+    newAssignedModifiers[currentEncounter][currentRaider] = chosenModifier;
     setAssignedModifiers(newAssignedModifiers);
   };
   const nextRaider = () => {
@@ -89,7 +86,7 @@ const StartLootbox = () => {
   }, [mustSpin]);
 
   const selectItem = () => {
-    const newSelectedItem = Math.floor(Math.random() * modifierCount);
+    const newSelectedItem = Math.floor(Math.random() * modifiers.length);
     setMustSpin(true);
     playAudio();
     setSelectedItem(newSelectedItem);
@@ -112,20 +109,20 @@ const StartLootbox = () => {
     setAudioMuted(newAudioMuted);
   };
 
+  const onSelectCell = (encounterIndex: number, raiderIndex: number) => {
+    setCurrentEncounter(encounterIndex);
+    setCurrentRaider(raiderIndex);
+  };
   return (
     <>
       <h2>{selectedRaid.name} Loot Box Raid</h2>
-      <div style={{ display: 'flex', flexDirection: 'row' }}>
-        {/* <div className="chosenModifiers">
-          <div>Chosen Modifiers:</div>
-          {chosenModifiers.map((x) => (
-            <div key={modifiers[x].name}>{modifiers[x].name}</div>
-            ))}
-          </div> */}
+      <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
         <EncounterGrid
           encounters={selectedRaid.encounters}
           raiders={raiders.map((r) => ({ name: r, assignedModifiers: [], modifiersByName: [], byEncounter: {} }))}
           assignedModifiers={assignedModifiers}
+          selectedCell={[currentEncounter, currentRaider]}
+          onSelectCell={onSelectCell}
         />
         <CustomWheel
           items={modifiers.map((x) => x.name)}
@@ -136,7 +133,6 @@ const StartLootbox = () => {
           isSpinning={mustSpin}
         />
       </div>
-      {/* <Button onClick={handleOpen}>Open modal</Button> */}
       {selectedItem && (
         <Modal
           open={modalOpen}
@@ -144,9 +140,10 @@ const StartLootbox = () => {
           aria-labelledby="modal-modal-title"
           aria-describedby="modal-modal-description"
         >
-          <Box sx={style}>
+          <Box sx={modalStyle}>
             <Typography id="modal-modal-title" variant="h6" component="h2">
-              {raiders[currentRaider]} has been assigned {modifiers[selectedItem!].name} for{' '}
+              {raiders[currentRaider]} has been assigned
+              <Typography sx={{ fontWeight: 'bold' }}>{modifiers[selectedItem].name}</Typography> for{' '}
               {encounters[currentEncounter].name}
             </Typography>
             <Typography id="modal-modal-description" sx={{ mt: 2 }}>
