@@ -1,7 +1,6 @@
 import './encounterGrid.scss';
 import { Modifier, RaidEncounter } from '../../types/Raid';
 import { RandomizedUser } from '../../randomizer/randomizer';
-import ModifierTooltip from '../ModifierTooltip/ModifierTooltip';
 import EncounterGridCell from './EncounterGridCell';
 
 interface Props {
@@ -10,11 +9,10 @@ interface Props {
   assignedModifiers: Record<number, Record<number, Modifier | undefined>>;
   selectedCell: [number, number];
   onSelectCell: (encounterIndex: number, raiderIndex: number) => void;
+  cellColor: string;
 }
 
-const EncounterGrid = ({ encounters, raiders, assignedModifiers, selectedCell, onSelectCell }: Props) => {
-  // Create a data structure to hold the modifiers for each encounter and raider
-  console.log('in EncounterGrid', { selectedCell });
+const EncounterGrid = ({ encounters, raiders, assignedModifiers, selectedCell, onSelectCell, cellColor }: Props) => {
   return (
     <div className="encounter-grid">
       <div className="empty-cell"></div>
@@ -34,6 +32,7 @@ const EncounterGrid = ({ encounters, raiders, assignedModifiers, selectedCell, o
                 modifier={assignedModifiers[encounterIndex]?.[raiderIndex]}
                 selected={encounterIndex === selectedCell[0] && raiderIndex === selectedCell[1]}
                 onSelectCell={() => onSelectCell(encounterIndex, raiderIndex)}
+                cellColor={cellColor}
               />
             ))}
           </>

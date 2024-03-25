@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import music from '../assets/music/spinmusic.mp3';
 import CustomWheel from '../components/Wheel/Wheel';
-import { getOrDefault } from '../localStorage/localStorage';
+import { get, getOrDefault, set } from '../localStorage/localStorage';
 import { defaultModifiers } from '../raids/modifiers';
 import { raids } from '../raids/raids';
 import { Modifier, Raid, RaidEncounter } from '../types/Raid';
@@ -16,10 +16,13 @@ export const modalStyle = {
   transform: 'translate(-50%, -50%)',
   width: 400,
   bgcolor: 'background.paper',
+  borderRadius: '5px',
   border: '2px solid #000',
   boxShadow: 24,
   p: 4,
 };
+
+type EncounterRaiderModifiers = Record<number, Record<number, Modifier | undefined>>;
 
 const StartLootbox = () => {
   const selectedRaid = getOrDefault<Raid>('raid', raids[0]);
@@ -30,7 +33,10 @@ const StartLootbox = () => {
   const [currentRaider, setCurrentRaider] = useState(0);
   const [currentEncounter, setCurrentEncounter] = useState(0);
   const [selectedItem, setSelectedItem] = useState<number | null>(null);
-  const [assignedModifiers, setAssignedModifiers] = useState<Record<number, Record<number, Modifier | undefined>>>({}); // encounterIndex -> raiderIndex -> modifierName
+
+  const [assignedModifiers, setAssignedModifiers] = useState<EncounterRaiderModifiers>({}); // encounterIndex -> raiderIndex -> modifier
+  const [isAlreadyAssigned, setIsAlreadyAssigned] = useState(false);
+  const [chosenModifiers, setChosenModifiers] = useState<number[]>([]);
 
   const [audioMuted, setAudioMuted] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
@@ -41,16 +47,58 @@ const StartLootbox = () => {
   audio.volume = 0.1;
 
   useEffect(() => {
-    const newAssignedModifiers = {} as Record<number, Record<number, Modifier | undefined>>;
+    const storedAssignedModifiers = loadAssignedModifiers();
+
+    if (!storedAssignedModifiers) {
+      setAssignedModifiers(initializeAssignedModifiers());
+      return;
+    }
+
+    setAssignedModifiers({ ...storedAssignedModifiers });
+    const selectedCell = loadCurrentSelectedCell(storedAssignedModifiers);
+    setCurrentEncounter(selectedCell[0]);
+    setCurrentRaider(selectedCell[1]);
+  }, []);
+
+  const initializeAssignedModifiers = () => {
+    const newAssignedModifiers = {} as EncounterRaiderModifiers;
     encounters.forEach((_, encounterIndex) => {
       newAssignedModifiers[encounterIndex] = {};
       raiders.forEach((_, raiderIndex) => {
         newAssignedModifiers[encounterIndex][raiderIndex] = undefined;
       });
     });
-    setAssignedModifiers({ ...newAssignedModifiers });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    return newAssignedModifiers;
+  };
+
+  const loadAssignedModifiers = () => {
+    const savedModifiers = get('assignedModifiers');
+
+    if (!savedModifiers) {
+      return null;
+    }
+
+    const parsedModifiers = JSON.parse(savedModifiers);
+    return parsedModifiers;
+  };
+
+  const loadCurrentSelectedCell = (modifiers: EncounterRaiderModifiers) => {
+    let selectedCell = [0, 0];
+    let foundCell = false;
+    encounters.forEach((_, encounterIndex) => {
+      raiders.forEach((__, raiderIndex) => {
+        if (!foundCell) {
+          foundCell = modifiers[encounterIndex][raiderIndex] === undefined;
+          if (foundCell) {
+            selectedCell = [encounterIndex, raiderIndex];
+            return;
+          }
+        }
+      });
+      if (foundCell) return;
+    });
+    return selectedCell;
+  };
 
   const acceptAssignment = () => {
     assignNewModifier();
@@ -62,10 +110,13 @@ const StartLootbox = () => {
   };
 
   const assignNewModifier = () => {
-    const chosenModifier = modifiers[selectedItem!];
-    const newAssignedModifiers = { ...assignedModifiers };
-    newAssignedModifiers[currentEncounter][currentRaider] = chosenModifier;
-    setAssignedModifiers(newAssignedModifiers);
+    if (selectedItem) {
+      const chosenModifier = modifiers[selectedItem];
+      const newAssignedModifiers = { ...assignedModifiers };
+      newAssignedModifiers[currentEncounter][currentRaider] = chosenModifier;
+      setAssignedModifiers(newAssignedModifiers);
+      set('assignedModifiers', newAssignedModifiers);
+    }
   };
   const nextRaider = () => {
     const newRaider = (currentRaider + 1) % raiders.length;
@@ -87,13 +138,14 @@ const StartLootbox = () => {
 
   const selectItem = () => {
     const newSelectedItem = Math.floor(Math.random() * modifiers.length);
+    setIsAlreadyAssigned(chosenModifiers.includes(newSelectedItem));
+    setChosenModifiers([...chosenModifiers, newSelectedItem]);
     setMustSpin(true);
     playAudio();
     setSelectedItem(newSelectedItem);
   };
 
   const playAudio = async () => {
-    console.log('in playAudio');
     if (!audioPlaying) {
       await audio.play();
       setAudioPlaying(true);
@@ -105,8 +157,11 @@ const StartLootbox = () => {
   const handleVolumeClick = () => {
     const newAudioMuted = !audioMuted;
     audio.volume = newAudioMuted ? 0 : 0.1;
-    console.log('audio: ', audio.volume);
     setAudioMuted(newAudioMuted);
+  };
+
+  const getAlreadyAssignedText = () => {
+    return '';
   };
 
   const onSelectCell = (encounterIndex: number, raiderIndex: number) => {
@@ -123,6 +178,7 @@ const StartLootbox = () => {
           assignedModifiers={assignedModifiers}
           selectedCell={[currentEncounter, currentRaider]}
           onSelectCell={onSelectCell}
+          cellColor={selectedRaid.wheelColor}
         />
         <CustomWheel
           items={modifiers.map((x) => x.name)}
@@ -137,16 +193,21 @@ const StartLootbox = () => {
         <Modal
           open={modalOpen}
           onClose={() => setModalOpen(false)}
-          aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description"
+          aria-labelledby="modal-title"
+          aria-describedby="modal-description"
         >
           <Box sx={modalStyle}>
-            <Typography id="modal-modal-title" variant="h6" component="h2">
+            <Typography id="modal-title" variant="h6" component="h2">
               {raiders[currentRaider]} has been assigned
               <Typography sx={{ fontWeight: 'bold' }}>{modifiers[selectedItem].name}</Typography> for{' '}
               {encounters[currentEncounter].name}
             </Typography>
-            <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+            {isAlreadyAssigned && (
+              <Typography id="modal-already-assigned" sx={{ mt: 2 }}>
+                {getAlreadyAssignedText()}
+              </Typography>
+            )}
+            <Typography id="modal-description" sx={{ mt: 2 }}>
               Would you like to accept this assignment?
             </Typography>
             <Button onClick={acceptAssignment}>Yes</Button>
