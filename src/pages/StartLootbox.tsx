@@ -85,18 +85,30 @@ const StartLootbox = () => {
   const loadCurrentSelectedCell = (modifiers: EncounterRaiderModifiers) => {
     let selectedCell = [0, 0];
     let foundCell = false;
-    encounters.forEach((_, encounterIndex) => {
-      raiders.forEach((__, raiderIndex) => {
-        if (!foundCell) {
-          foundCell = modifiers[encounterIndex][raiderIndex] === undefined;
-          if (foundCell) {
-            selectedCell = [encounterIndex, raiderIndex];
-            return;
-          }
+
+    for (let encounterIndex = 0; encounterIndex < encounters.length; encounterIndex++) {
+      if (foundCell) break;
+      for (let raiderIndex = 0; raiderIndex < raiders.length; raiderIndex++) {
+        foundCell = modifiers[encounterIndex][raiderIndex] === undefined;
+        if (foundCell) {
+          selectedCell = [encounterIndex, raiderIndex];
+          break;
         }
-      });
-      if (foundCell) return;
-    });
+      }
+    }
+
+    // encounters.forEach((_, encounterIndex) => {
+    //   raiders.forEach((__, raiderIndex) => {
+    //     if (!foundCell) {
+    //       foundCell = modifiers[encounterIndex][raiderIndex] === undefined;
+    //       if (foundCell) {
+    //         selectedCell = [encounterIndex, raiderIndex];
+    //         return;
+    //       }
+    //     }
+    //   });
+    //   if (foundCell) return;
+    // });
     return selectedCell;
   };
 
